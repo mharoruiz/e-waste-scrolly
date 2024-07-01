@@ -1,1 +1,3 @@
 /node_modules
+vite.config.js.timestamp*
+.DS_Store
