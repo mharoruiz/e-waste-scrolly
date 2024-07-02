@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://mharoruiz.github.io/e-waste-scrolly",
+  "homepage": "https://mharoruiz.github.io/global-e-waste/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

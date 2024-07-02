@@ -11,7 +11,7 @@
 
     let width;
     let height;
-    const margin = { top: 10, bottom: 45, left: 75, right: 10 };
+    const margin = { top: 10, bottom: 50, left: 80, right: 5 };
 
     let chartWidth;
     let chartHeight;
@@ -49,7 +49,7 @@
                 .domain([0, 1])
                 .range([0, chartHeight]);
 
-        xGrid = xScale.ticks(width > 400 ? 5 : 3)
+        xGrid = xScale.ticks(width > 350 ? 5 : 3)
 
         barSpace = chartHeight / barsToShow;
 
@@ -106,10 +106,7 @@
                             text-anchor="start"
                             x={yVal.ewaste_kg_capita > 2.5 ? 10 : xScale(yVal.ewaste_kg_capita) + 5}
                             y={(barSpace * idx) + (barSpace * 0.65)}
-                            style="fill: {yVal.income == "middle" && yVal.ewaste_kg_capita > 2.5 ? 
-                                "rgb(215, 215, 215)" : 
-                                "rgb(30, 30, 30)"};
-                                opacity:{step == 8 ? 0 : 1};
+                            style=" opacity:{step == 8 ? 0 : 1};
                                 transition: opacity .5s ease-in-out"
                         >
                                 {#if idx == 0}
@@ -140,7 +137,7 @@
                             <line 
                                 y1={-tbPadding}
                                 y2={chartHeight + tbPadding} 
-                                stroke-width="0.45px"
+                                stroke-width="0.25px"
                                 stroke="black" />
                             <text 
                                 class="x-axis-label label"
@@ -156,7 +153,7 @@
                         class="x-axis-title label"
                         text-anchor="middle"
                         x={chartWidth / 2}
-                        y={ margin.top + chartHeight + margin.bottom * .66}
+                        y={ margin.top + chartHeight + margin.bottom * .725}
                     >
                         kg/capita
                     </text>
@@ -173,20 +170,20 @@
                         stroke="#D13E3E"
                     />
                     <text 
-                        class="plot-annotation label"
+                        class="avg-annotation label"
                         text-anchor="start" 
                         dx=".5em" 
-                        y={yScale(.85)}
+                        y={yScale(.8)}
                     >
-                        Global average:
+                        7.87
                     </text>
                     <text 
-                        class="plot-annotation label"
+                        class="avg-annotation label"
                         text-anchor="start" 
                         dx=".5em" 
-                        y={yScale(.89)}
+                        y={yScale(.8) + 17.5}
                     >
-                        7.87 kg/capita
+                        World average
                     </text>
                 </g>
             </g>
@@ -197,27 +194,61 @@
 <style>
     .label {
         font-family: monospace;
+        fill:black;
     }
 
     .x-axis-label, .y-axis-label {
-        fill:black;
         font-weight: 400;
         font-size:.75em
     }
 
     .x-axis-title {
-        fill: black;
         font-weight: 500;
         font-size: .9em;
     }
 
     .rank-label {
-        font-size: .66em
+        fill:#1c1c1c
     }
 
-    .plot-annotation {
+    .avg-annotation {
         fill: #D13E3E;
-        font-size: .9em;
+        text-shadow: .75px .75px 0 #cbcbcb;
+    }
+
+    /* Mobile and tablet settings */
+    .x-axis-label, .y-axis-label {
+        font-size: .9em
+    }
+    .x-axis-title {
+        font-size: 1.25em;
+    }
+    .rank-label {
+        font-size: .8em
+    }
+    .avg-annotation:first-of-type {
+        font-size: 1.15em;
+    }
+    .avg-annotation {
+        font-size: 1em;
+    }
+    /* Desktop settings */
+    @media all and (min-width: 992px) {
+        .x-axis-label, .y-axis-label {
+            font-size: 1em
+        }
+        .x-axis-title {
+            font-size: 1.38em;
+        }
+        .rank-label {
+            font-size: .89em
+        }
+        .avg-annotation:first-of-type {
+            font-size: 1.265em;
+        }
+        .avg-annotation {
+            font-size: 1.1em;
+        }
     }
 
 </style>

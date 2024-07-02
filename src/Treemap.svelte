@@ -21,7 +21,7 @@
     let outerNodes = [];
     let innerNodes = [];
 
-    const margin = { top: 10, bottom: 45, left: 10, leftBars: 75, right: 10};
+    const margin = { top: 10, bottom: 50, left: 10, leftBars: 80, right: 5};
 
     // Specify formatting function.
     const formater = format(",d");
@@ -58,8 +58,8 @@
         colorScaleCountry = scaleOrdinal(
             outerNodes.map((d) => d.data.country),
             ["#53A182", "#A27C43", "#724292",
-            "#724292", "#A27C43", "#53A182",  
-            "#724292", "#A27C43", "#6D4587", 
+            "#53A182", "#A27C43", "#724292",
+            "#53A182", "#A27C43", "#724292",
             "#53A182", 
             "#d3d3d3"]
         );
@@ -144,7 +144,7 @@
         >
             {#if step < 1}
                 <g
-                    in:scale={{ duration: 750, easing: cubicInOut }}
+                    in:scale={{ duration: 1000, easing: cubicInOut }}
                     out:fade={{ duration: 1000, easing: cubicInOut }}
                     transform-origin=center
                 >
@@ -161,18 +161,18 @@
                         <use href="#rect-init" />
                     </clipPath>
                     <text
-                        class="country-label-name"
+                        class="label-name name-big"
                         clip-path="url(#clip-init)"
-                        x={7.5}
-                        y={20}
+                        x={(width - margin.right - margin.left) * .05}
+                        y={(width - margin.right - margin.left) * .125}
                     >
                         World
                     </text>
                     <text
-                        class="country-label-value"
+                        class="label-value value-big"
                         clip-path="url(#clip-init)"
-                        x={10}
-                        y={35}
+                        x={(width - margin.right - margin.left) * .1}
+                        y={(width - margin.right - margin.left) * .2}
                     >
                         61.9 bln kg
                     </text>
@@ -204,6 +204,15 @@
                                 step == 4 && outNode.data.country != "Other" ? colorScaleIncome(outNode.data.income) :
                                 "none"}
                             fill-opacity={step == 4 ? "1" : ".75"}
+                            style={step == 3 || step == 4 ? 
+                            `transition: fill 2000ms 1000ms ease,
+                                fill-opacity 500ms 750ms ease, 
+                                stroke-width 500ms 750ms ease, 
+                                width 1000ms 1000ms ease, 
+                                height 1000ms 1000ms ease, 
+                                x 1500ms 1000ms ease, 
+                                y 1500ms 1000ms ease;` : 
+                            "transition: fill 1000ms ease;"}
                         /> 
                         {#if outNode.data.country == "Other"}
                             {#each innerNodes as inNode, inNodeIndex}
@@ -221,62 +230,115 @@
                                     stroke-width={step == 4 ? "0" : ".2px"}
                                     fill={step == 4 ? colorScaleIncome(inNode.data.income) : "#d3d3d3"}
                                     fill-opacity={step == 4 ? "1" : ".75"}
+                                    style={step == 3 || step == 4 ? 
+                                    `transition: fill 2000ms 1000ms ease,
+                                        fill-opacity 500ms 750ms ease, 
+                                        stroke-width 500ms 750ms ease, 
+                                        width 1000ms 1000ms ease, 
+                                        height 1000ms 1000ms ease, 
+                                        x 1500ms 1000ms ease, 
+                                        y 1500ms 1000ms ease;` : 
+                                    "transition: fill 1000ms ease;"}
                                 />
                             {/each}
                         {/if}
                         <clipPath id="clip-{outNodeIndex}">
                             <use href="#rect-{outNodeIndex}" />
                         </clipPath>
-                        {#if step < 2 && outNodeIndex <= 3 }
+                        {#if (step >= 1 && step <= 3) && outNodeIndex < 3 }
                             <text
-                                in:fade={{ duration: 1000, easing: cubicInOut }}
-                                out:fade={{ duration: 750, easing: cubicInOut }}
-                                class="country-label-name"
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-name name-mid"
                                 clip-path="url(#clip-{outNodeIndex})"
-                                x={outNode.x0 + 5}
-                                y={outNode.y0 + 20}
-                            >
-                                {outNode.data.country == "Japan" ?  "Other": 
-                                    outNode.data.country}
-                            </text>
-                            <text
-                                in:fade={{ duration: 1000, easing: cubicInOut }}
-                                out:fade={{ duration: 750, easing: cubicInOut }}
-                                class="country-label-value"
-                                clip-path="url(#clip-{outNodeIndex})"
-                                x={outNode.x0 +  7.5}
-                                y={outNode.y0 +  35}
-                            >
-                                {outNode.data.country == "China" ? `${outNode.data.ewaste.toFixed(1)} bln kg` : 
-                                    outNode.data.country == "Japan" ?  "38.5": 
-                                    outNode.data.ewaste.toFixed(1)}
-                            </text>
-                        {:else if step == 2 || step == 3}
-                            <text
-                                in:fade={{ duration: 1000, easing: cubicInOut }}
-                                out:fade={{ duration: 750, easing: cubicInOut }}
-                                class="country-label-name"
-                                clip-path="url(#clip-{outNodeIndex})"
-                                x={outNode.x0 + 5}
-                                y={outNode.y0 + 20}
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 8 : 
+                                    outNode.x0 + 10}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 22.5 :
+                                    outNode.y0 + 25}
                             >
                                 {outNode.data.country}
                             </text>
                             <text
-                                in:fade={{ duration: 1000, easing: cubicInOut }}
-                                out:fade={{ duration: 750, easing: cubicInOut }}
-                                class="country-label-value"
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-value value-mid"
                                 clip-path="url(#clip-{outNodeIndex})"
-                                x={outNode.x0 + 7.5}
-                                y={outNode.y0 + 35}
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 14 : 
+                                    outNode.x0 + 16}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 40 :
+                                    outNode.y0 + 42.5}
                             >
-                                {outNode.data.country == "China" ? 
-                                    `${outNode.data.ewaste.toFixed(1)} bln kg` : 
+                                {outNode.data.country == "China" ? `${outNode.data.ewaste.toFixed(1)} bln kg` :
                                     outNode.data.ewaste.toFixed(1)}
+                            </text>
+                        {/if}
+                        {#if step == 1 && outNodeIndex == 3}
+                            <text
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-name name-mid"
+                                clip-path="url(#clip-{outNodeIndex})"
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 8 : 
+                                    outNode.x0 + 10}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 22.5 :
+                                    outNode.y0 + 25}
+                            >
+                                Other
+                            </text>
+                            <text
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-value value-mid"
+                                clip-path="url(#clip-{outNodeIndex})"
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 14 : 
+                                    outNode.x0 + 16}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 40 :
+                                    outNode.y0 + 42.5}
+                            >
+                                38.5
+                            </text>
+                        {/if}    
+                        {#if (step == 2 || step == 3) && outNodeIndex >= 3}
+                            <text
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-name name-small"
+                                clip-path="url(#clip-{outNodeIndex})"
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 7 : 
+                                    outNode.x0 + 9}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 17.5 :
+                                    outNode.y0 + 20}
+                            >
+                                {outNode.data.country}
+                            </text>
+                            <text
+                                in:fade={{ duration: 1500, easing: cubicInOut }}
+                                out:fade={{ duration: 1000, easing: cubicInOut }}
+                                class="label-value value-small"
+                                clip-path="url(#clip-{outNodeIndex})"
+                                x={document.body.clientWidth < 1200 ?
+                                    outNode.x0 + 13 : 
+                                    outNode.x0 + 15}
+                                y={document.body.clientWidth < 992 ?
+                                    outNode.y0 + 32 :
+                                    outNode.y0 + 34}
+                            >
+                                {outNode.data.ewaste.toFixed(1)}
                             </text>
                         {/if} 
                         {#if step == 4}
                             <rect
+                                out:fade={{ duration: 4000, easing: cubicInOut }}
                                 x={-margin.left}
                                 y={chartHeightBars}
                                 width={width}
@@ -293,27 +355,77 @@
 
 <style>
 
-    rect[id^="rect-"] {
-        transition: fill-opacity 500ms 750ms ease,
-            stroke-width 500ms 750ms ease,
-            width 1000ms 1000ms ease,
-            height 1000ms 1000ms ease,
-            x 1500ms 1000ms ease, 
-            y 1500ms 1000ms ease,
-            fill 2000ms 1000ms ease;
+    text[class^='label-'] {
+        fill:black;
+        font-family: monospace;
     }
 
-    .country-label-name {
-        fill:black;
+    .label-name {
         font-weight: 500;
-        font-family: monospace;
-        font-size:1em
+    }
+    .label-value {
+        font-weight: 300;
     }
 
-    .country-label-value {
-        fill:black;
-        font-weight: 300;
-        font-family: monospace;
-        font-size:.66em
+    /* Mobile arrangement */
+    .name-big {
+        font-size: 1.5em;
+    }
+    .value-big {
+        font-size: 1em;
+    }
+    .name-mid {
+        font-size: 1.4em;
+    }
+    .value-mid {
+        font-size: .93em;
+    }
+    .name-small {
+        font-size: 1em;
+    }
+    .value-small {
+        font-size: .67em;
+    }
+    /* Tablet settings */
+    @media all and (min-width: 600px) {
+        .name-big {
+            font-size: 1.75em;
+        }
+        .value-big {
+            font-size: 1.16em;
+        }
+        .name-mid {
+            font-size: 1.55em;
+        }
+        .value-mid {
+            font-size: 1.03em;
+        }
+        .name-small {
+            font-size: 1.1em;
+        }
+        .value-small {
+            font-size: .73em;
+        }
+    }
+    /* Laptop settings */
+    @media all and (min-width: 992px) {
+        .name-big {
+            font-size: 2em;
+        }
+        .value-big {
+            font-size: 1.33em;
+        }
+        .name-mid {
+            font-size: 1.7em;
+        }
+        .value-mid {
+            font-size: 1.13em;
+        }
+        .name-small {
+            font-size: 1.2em;
+        }
+        .value-small {
+            font-size: .8em;
+        }
     }
   </style>
