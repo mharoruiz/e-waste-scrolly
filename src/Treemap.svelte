@@ -1,137 +1,410 @@
 <script>
-
     import { onMount } from 'svelte';
-    import { fetchOuter, fetchInner, outerData, innerData, dataPerCapita} from './stores.js';
-    import { treemap, treemapSquarify, format, scaleLinear, scaleOrdinal} from 'd3';    
+    import { fetchOuter, fetchInner, outerData, innerData, dataPerCapita } from './stores.js';
+    import { treemap, treemapSquarify, scaleLinear, scaleOrdinal, interpolate } from 'd3';    
     import { get } from "svelte/store";
+    import { tweened } from 'svelte/motion';
     import { fade, scale } from "svelte/transition";
     import { cubicInOut } from 'svelte/easing';
 
     export let step;
 
+    //  Define chart dimensions
     let width;
     let height;
+    const margin = { top: 10, bottom: 50, left: 10, leftBars: 85, right: 10 };
+
+    // *** Treemap ***
+
+    // Define variables
+    let outerWidth;
+    let outerHeight;
 
     let innerWidth;
     let innerHeight;
 
-    let colorScaleCountry;
-    let colorScaleIncome;
-
     let outerNodes = [];
     let innerNodes = [];
 
-    const margin = { top: 10, bottom: 50, left: 10, leftBars: 80, right: 5};
+    let outMaxIdx;
 
-    // Specify formatting function.
-    const formater = format(",d");
+    let palette1 = [
+        "#53A182", "#A27C43", "#724292", 
+        "#D3D3D3", "#D3D3D3", "#D3D3D3", 
+        "#D3D3D3", "#D3D3D3", "#D3D3D3", 
+        "#D3D3D3"];
 
+    let palette2 = [
+        "#53A182", "#A27C43", "#724292", 
+        "#53A182", "#A27C43", "#724292", 
+        "#53A182", "#A27C43", "#724292", 
+        "#53A182"];
+
+    //  Define tweened values
+    let tweenedFillOuter;
+    let tweenedFillInner;
+    let tweenedWidthOuter;
+    let tweenedHeightOuter;
+    let tweenedWidthInner;
+    let tweenedHeightInner;
+    let tweenedXOuter;
+    let tweenedXInner;
+    let tweenedYOuter;
+    let tweenedYInner;
+
+
+    // Fetch data
     onMount(() => {
         fetchOuter("https://raw.githubusercontent.com/mharoruiz/datasets/main/e-waste/treemap_outer.csv");
         fetchInner("https://raw.githubusercontent.com/mharoruiz/datasets/main/e-waste/treemap_inner.csv");
     });
 
-    $: if ($outerData) {
-        const outerRoot = get(outerData);
+    // Outer treemap settings
+    const setupOuterTreemap = function(outerRoot) {
+        outerWidth = width - margin.left - margin.right;
+        outerHeight = height - margin.top - margin.bottom;
 
-        if (outerRoot) {
-            const outerLayout = treemap()
-                .tile(treemapSquarify)
-                // .tile(treemapBinary)
-                // .tile(treemapResquarify)
-                .size(
-                    [width - margin.left - margin.right, 
-                    height - margin.top - margin.bottom]
-                )
-                .paddingOuter(1)
-                .paddingInner(0)
-                .round(true);
-        
-            outerLayout(outerRoot.sum(d => +d.ewaste));
+        const outerLayout = treemap()
+            .tile(treemapSquarify)
+            .size([outerWidth, outerHeight])
+            .paddingOuter(1)
+            .paddingInner(0)
+            .round(true);
 
-            outerNodes = outerRoot.leaves();
+        outerLayout(outerRoot.sum(d => +d.ewaste));
+        outerNodes = outerRoot.leaves();
+        outMaxIdx = outerNodes.length - 1;
 
-            innerWidth = outerNodes[(outerNodes.length-1)].x1 - outerNodes[(outerNodes.length-1)].x0;
-            innerHeight = outerNodes[(outerNodes.length-1)].y1 - outerNodes[(outerNodes.length-1)].y0;
+        innerWidth = outerNodes[outMaxIdx].x1 - outerNodes[outMaxIdx].x0;
+        innerHeight = outerNodes[outMaxIdx].y1 - outerNodes[outMaxIdx].y0;
+    }
+
+    // Inner treemap settings
+    const setupInnerTreemap = function(innerRoot) {
+        const innerLayout = treemap()
+            .tile(treemapSquarify)
+            .size([innerWidth, innerHeight])
+            .paddingOuter(0)
+            .paddingInner(0)
+            .round(true);
+
+        innerLayout(innerRoot.sum(d => +d.ewaste));
+        innerNodes = innerRoot.leaves();
+    }
+
+    // Set initial tweened values
+    const initializeTweens = function() {
+
+        // Outer treemap
+        // Fill
+        if (step < 2) {
+            tweenedFillOuter = tweened(
+                outerNodes.map((_, i) => palette1[i]), 
+                {
+                    duration: 1000,
+                    easing: cubicInOut,
+                    interpolate: interpolate
+                }
+            )
+        } else {
+            tweenedFillOuter.set(
+                outerNodes.map((_, i) => palette2[i])
+            );
         }
-
-        colorScaleCountry = scaleOrdinal(
-            outerNodes.map((d) => d.data.country),
-            ["#53A182", "#A27C43", "#724292",
-            "#53A182", "#A27C43", "#724292",
-            "#53A182", "#A27C43", "#724292",
-            "#53A182", 
-            "#d3d3d3"]
+        
+        // Width 
+        tweenedWidthOuter = tweened(
+            outerNodes.map((d) => d.x1 - d.x0), 
+            {
+                delay: 1000,
+                duration: 1000,
+                easing: cubicInOut
+            }
         );
+        // Height
+        tweenedHeightOuter = tweened(
+            outerNodes.map((d) => d.y1 - d.y0), 
+            {
+                delay: 1000,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );
+        // X-values
+        tweenedXOuter = tweened(
+            outerNodes.map((d) => d.x0), 
+            {
+                delay: 1500,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );           
+        // Y-values
+        tweenedYOuter = tweened(
+            outerNodes.map((d) => d.y0), 
+            {
+                delay: 1500,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );
+
+        // Inner treemap
+        // Fill
+        tweenedFillInner = tweened(
+            innerNodes.map(() => "#D3D3D3"), 
+            {
+                duration: 1000,
+                easing: cubicInOut,
+                interpolate: interpolate
+            }
+        );
+        // Width
+        tweenedWidthInner = tweened(
+            innerNodes.map((d) => d.x1 - d.x0), 
+            {
+                delay: 1000,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );
+        // Height
+        tweenedHeightInner = tweened(
+            innerNodes.map((d) => d.y1 - d.y0), 
+            {
+                delay: 1000,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );      
+        // X-values
+        tweenedXInner = tweened(
+            innerNodes.map((d) => d.x0 + outerNodes[outMaxIdx].x0),
+            {
+                delay: 1500,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );   
+        // Y-values
+        tweenedYInner = tweened(
+            innerNodes.map((d) => d.y0 + outerNodes[outMaxIdx].y0), 
+            {
+                delay: 1500,
+                duration: 1000,
+                easing: cubicInOut
+            }
+        );    
     }
 
-    $: if ($innerData) {
-        const innerRoot = get(innerData);
-
-        if (innerRoot) {
-            const innerLayout = treemap()
-                .tile(treemapSquarify)
-                // .tile(treemapBinary)
-                // .tile(treemapResquarify)
-                .size([innerWidth, innerHeight])
-                .paddingOuter(0)
-                .paddingInner(0)
-                .round(true);
-        
-            innerLayout(innerRoot.sum(d => +d.ewaste));
-
-            innerNodes = innerRoot.leaves();
+    // Set tween values for treemap
+    const setTreemapTweens = function() {
+        // Fill
+        const setTreemapFill = function() {
+            tweenedFillOuter.set(
+                outerNodes.map((_, i) => palette2[i])
+            );
+            tweenedFillInner.set(
+                innerNodes.map(() => "#D3D3D3")
+            );
         }
+        // Width
+        const setTreemapWidth = function() {
+            tweenedWidthOuter.set(
+                outerNodes.map((d) => d.x1 - d.x0)
+            );
+            tweenedWidthInner.set(
+                innerNodes.map((d) => d.x1 - d.x0)
+            );
+        };
+        // Height
+        const setTreemapHeight = function() {
+            tweenedHeightOuter.set(
+                outerNodes.map((d) => d.y1 - d.y0)
+            );
+            tweenedHeightInner.set(
+                innerNodes.map((d) => d.y1 - d.y0)
+            );
+        };
+        // X-values
+        const setTreemapX = function() {
+            tweenedXOuter.set(
+                outerNodes.map((d) => d.x0)
+            );
+            tweenedXInner.set(
+                innerNodes.map((d) => d.x0 + outerNodes[outMaxIdx].x0)
+            );
+        };
+        // Y-values
+        const setTreemapY = function() {
+            tweenedYOuter.set(
+                outerNodes.map((d) => d.y0)
+            );
+            tweenedYInner.set(
+                innerNodes.map((d) => d.y0 + outerNodes[outMaxIdx].y0)
+            );
+        };
+
+        setTreemapFill();
+        setTreemapWidth();
+        setTreemapHeight();
+        setTreemapX();
+        setTreemapY();
     }
 
-    // ************************************************
+    // *** Barplot ***
 
-    let dataBars;
-
+    //  Define variables 
     let chartWidthBars;
     let chartHeightBars;
 
     let xDomainBars;
-    let yDomainBars;
     let xScaleBars;
+
+    let yDomainBars;
     let yScaleBars;
 
+    let colorScaleBars;
+
     let barSpaceBars;
-    let barsToShowBars = 20;
-    let barPaddingBars = .1;
+    const barsToShowBars = 20;
+    const barPaddingBars = .1;
 
-    $: if ($dataPerCapita) {
-
-        dataBars = $dataPerCapita;
-
+    // Barplot settings
+    function setupBarplot(dataBars) {
+        // Define dimensions
         chartWidthBars = width - margin.right - margin.leftBars;
         chartHeightBars = height - margin.bottom - margin.top;
 
+        // X scale
         xDomainBars = dataBars.map((d) => +d.ewaste_kg_capita);
-
         xScaleBars = scaleLinear()
             .domain([0, Math.max.apply(null, xDomainBars)])
             .range([0, chartWidthBars]);
 
-        yDomainBars = dataBars.map((d) => d.country)
-
+        // Y scale
+        yDomainBars = dataBars.map((d) => d.country);
         yScaleBars = scaleLinear()
-                .domain([0, 1])
-                .range([0, chartHeightBars]);
+            .domain([0, 1])
+            .range([0, chartHeightBars]);
 
-        barSpaceBars = chartHeightBars / barsToShowBars;
-
-        colorScaleIncome = scaleOrdinal(
+        // Color scale
+        colorScaleBars = scaleOrdinal(
             ["high", "middle", "low", "NA"],
             ["#53A182", "#A27C43", "#724292", "grey"]
         );
 
+        barSpaceBars = chartHeightBars / barsToShowBars;
+    }
+
+    // Set tweened values for barplot
+    function setBarplotTweens() {
+        // Fill
+        const setBarplotFill = function() {
+            tweenedFillOuter.set(
+                outerNodes.map((d) => colorScaleBars(d.data.income)),
+                {duration: 2000}
+            );
+            tweenedFillInner.set(
+                innerNodes.map((d) => colorScaleBars(d.data.income)),
+                {duration: 2000}
+            );
+        }
+        // Width
+        const setBarplotWidth = function() {
+            tweenedWidthOuter.set(
+                outerNodes.map((d) => xScaleBars(d.data.ewaste_capita))
+            )
+            tweenedWidthInner.set(
+                innerNodes.map((d) => xScaleBars(d.data.ewaste_capita))
+            )
+        };
+        // Height
+        const setBarplotHeight = function() {
+            let height = barSpaceBars - (2 * barSpaceBars * barPaddingBars);
+            tweenedHeightOuter.set(outerNodes.map(() => height));
+            tweenedHeightInner.set(innerNodes.map(() => height));
+        };
+        // X-values
+        const setBarplotX = function() {
+            tweenedXOuter.set(outerNodes.map(() => margin.leftBars - margin.left));
+            tweenedXInner.set(innerNodes.map(() => margin.leftBars - margin.left));
+        };
+        // Y-values
+        const setBarplotY = function() {
+            tweenedYOuter.set(outerNodes.map((d) => 
+                (barSpaceBars * (d.data.rank_capita - 1)) + (barSpaceBars * barPaddingBars)
+            ));
+            tweenedYInner.set(innerNodes.map((d) => 
+                (barSpaceBars * (d.data.rank_capita - 1)) + (barSpaceBars * barPaddingBars)
+            ));
+        };
+
+        setBarplotFill();
+        setBarplotWidth();
+        setBarplotHeight();
+        setBarplotX();
+        setBarplotY();
+    }
+
+    // Transition settings
+    const tweenedFillOpacity = tweened(.75, {
+        delay: 500,
+        duration: 1000,
+        easing: cubicInOut
+    });
+
+    const tweenedStrokeWidth = tweened(.2, {
+        delay: 500,
+        duration: 1000,
+        easing: cubicInOut
+    });
+
+    // Reactivity
+    $: if ($outerData) {
+        const outerRoot = get(outerData);
+        if (outerRoot) {
+            setupOuterTreemap(outerRoot);
+            if (step < 3 ) {
+                initializeTweens();
+            } else if (step == 3) {
+                setTreemapTweens();
+            }
+        }
+    }
+
+    $: if ($innerData) {
+        const innerRoot = get(innerData);
+        if (innerRoot) {
+            setupInnerTreemap(innerRoot);
+            if (step < 3 ) {
+                initializeTweens();
+            } else if (step == 3) {
+                setTreemapTweens();
+            }
+        }
+    }
+
+    $: if ($dataPerCapita) {
+        setupBarplot($dataPerCapita);
+        if (step == 4) {
+            setBarplotTweens();
+        }
+    }
+
+    $: if (step < 4) {
+        tweenedFillOpacity.set(.75);
+        tweenedStrokeWidth.set(.2);
+    } else if (step == 4) {
+        tweenedFillOpacity.set(1);
+        tweenedStrokeWidth.set(0);
     }
 
 </script>
 
-<div
-    class="chart"
+
+<div 
+    class="treemap-container"
     bind:offsetWidth={width}
     bind:offsetHeight={height}
 >
@@ -142,7 +415,7 @@
         <g
             transform="translate({margin.left}, {margin.top})"
         >
-            {#if step < 1}
+            {#if step == 0}
                 <g
                     in:scale={{ duration: 1000, easing: cubicInOut }}
                     out:fade={{ duration: 1000, easing: cubicInOut }}
@@ -153,9 +426,9 @@
                         width={width - margin.right - margin.left}
                         height={height - margin.top - margin.bottom}
                         stroke="black"
-                        stroke-width=".5px"
-                        fill="#898a74"
-                        opacity=".66"
+                        stroke-width=".35px"
+                        fill="#9F9F9F"
+                        fill-opacity=.75
                     />
                     <clipPath id="clip-init">
                         <use href="#rect-init" />
@@ -174,71 +447,46 @@
                         x={(width - margin.right - margin.left) * .1}
                         y={(width - margin.right - margin.left) * .2}
                     >
-                        61.9 bln kg
+                        61.9 bil. kg
                     </text>
                 </g>
             {:else if step >= 1 && step <= 4}
                 <g
-                    in:fade={{ duration: 1000, easing: cubicInOut }}
+                    in:fade={{ duration: step == 1 ? 1000 : 0, easing: cubicInOut }}
                     out:fade={{ duration: 1000, easing: cubicInOut }}
                     transform-origin=center
                 >
                     {#each outerNodes as outNode, outNodeIndex}
-                        <rect
-                            id="rect-{outNodeIndex}"
-                            x={step == 4 ? (margin.leftBars - margin.left) : outNode.x0}
-                            y={step == 4 ? 
-                                (barSpaceBars * (outNode.data.rank_capita - 1)) + (barSpaceBars * barPaddingBars) : 
-                                outNode.y0}
-                            width={step == 4 ? xScaleBars(outNode.data.ewaste_capita) : outNode.x1 - outNode.x0}
-                            height={step == 4 ? 
-                                barSpaceBars - (2 * barSpaceBars * barPaddingBars) : 
-                                outNode.y1 - outNode.y0}
-                            stroke={outNode.data.country == "Other" ? "none" : "black"}
-                            stroke-width={step == 4 ? "0" : ".2px"}
-                            fill={step == 1 && outNodeIndex <= 2 ? colorScaleCountry(outNode.data.country) :
-                                step == 1 && outNodeIndex > 2 && outNode.data.country != "Other" ? "#d3d3d3" :
-                                step == 1 && outNode.data.country == "Other" ? "none":
-                                (step == 2 || step == 3) && outNode.data.country != "Other" ? colorScaleCountry(outNode.data.country) :
-                                (step == 2 || step == 3) && outNode.data.country == "Other" ? "none" :
-                                step == 4 && outNode.data.country != "Other" ? colorScaleIncome(outNode.data.income) :
-                                "none"}
-                            fill-opacity={step == 4 ? "1" : ".75"}
-                            style={step == 3 || step == 4 ? 
-                            `transition: fill 2000ms 1000ms ease,
-                                fill-opacity 500ms 750ms ease, 
-                                stroke-width 500ms 750ms ease, 
-                                width 1000ms 1000ms ease, 
-                                height 1000ms 1000ms ease, 
-                                x 1500ms 1000ms ease, 
-                                y 1500ms 1000ms ease;` : 
-                            "transition: fill 1000ms ease;"}
-                        /> 
-                        {#if outNode.data.country == "Other"}
-                            {#each innerNodes as inNode, inNodeIndex}
+                        {#if outNode.data.country != "Other"}
+                            <rect
+                                id="rect-{outNodeIndex}"
+                                x={$tweenedXOuter[outNodeIndex]}
+                                y={$tweenedYOuter[outNodeIndex]}
+                                width={$tweenedWidthOuter[outNodeIndex]}
+                                height={$tweenedHeightOuter[outNodeIndex]}
+                                stroke="black"
+                                stroke-width="{$tweenedStrokeWidth}px"
+                                fill={$tweenedFillOuter[outNodeIndex]}
+                                fill-opacity={$tweenedFillOpacity}
+                                style={step == 1 ? 
+                                    `-webkit-transition: fill 1000ms ease-in-out;
+                                    -moz-transition: fill 1000ms ease-in-out;
+                                    -ms-transition: fill 1000ms ease-in-out;
+                                    -o-transition: fill 1000ms ease-in-out;
+                                    transition: fill 1000ms ease-in-out;`:
+                                    ""}
+                            /> 
+                        {:else}
+                            {#each innerNodes as _, inNodeIndex}
                                 <rect
-                                    id="rect-{outNodeIndex + inNodeIndex}"
-                                    x={step == 4 ? (margin.leftBars - margin.left) : outNode.x0 + inNode.x0}
-                                    y={step == 4 ? 
-                                        (barSpaceBars * (inNode.data.rank_capita - 1)) + (barSpaceBars * barPaddingBars) : 
-                                        outNode.y0 + inNode.y0}
-                                    width={step == 4 ? xScaleBars(inNode.data.ewaste_capita) : inNode.x1 - inNode.x0}
-                                    height={step == 4 ? 
-                                        barSpaceBars - (2 * barSpaceBars * barPaddingBars) : 
-                                        inNode.y1 - inNode.y0}
+                                    x={$tweenedXInner[inNodeIndex]}
+                                    y={$tweenedYInner[inNodeIndex]}
+                                    width={$tweenedWidthInner[inNodeIndex]}
+                                    height={$tweenedHeightInner[inNodeIndex]}
                                     stroke="black"
-                                    stroke-width={step == 4 ? "0" : ".2px"}
-                                    fill={step == 4 ? colorScaleIncome(inNode.data.income) : "#d3d3d3"}
-                                    fill-opacity={step == 4 ? "1" : ".75"}
-                                    style={step == 3 || step == 4 ? 
-                                    `transition: fill 2000ms 1000ms ease,
-                                        fill-opacity 500ms 750ms ease, 
-                                        stroke-width 500ms 750ms ease, 
-                                        width 1000ms 1000ms ease, 
-                                        height 1000ms 1000ms ease, 
-                                        x 1500ms 1000ms ease, 
-                                        y 1500ms 1000ms ease;` : 
-                                    "transition: fill 1000ms ease;"}
+                                    stroke-width="{$tweenedStrokeWidth}px"
+                                    fill={$tweenedFillInner[inNodeIndex]}
+                                    fill-opacity={$tweenedFillOpacity}
                                 />
                             {/each}
                         {/if}
@@ -272,7 +520,8 @@
                                     outNode.y0 + 40 :
                                     outNode.y0 + 42.5}
                             >
-                                {outNode.data.country == "China" ? `${outNode.data.ewaste.toFixed(1)} bln kg` :
+                                {outNode.data.country == "China" ? 
+                                    `${outNode.data.ewaste.toFixed(1)} bil. kg` :
                                     outNode.data.ewaste.toFixed(1)}
                             </text>
                         {/if}
@@ -355,6 +604,13 @@
 
 <style>
 
+    .treemap-container {
+        position: absolute;
+        top:0;
+        height: 100%;
+        width: 100%
+    }
+
     text[class^='label-'] {
         fill:black;
         font-family: monospace;
@@ -367,7 +623,7 @@
         font-weight: 300;
     }
 
-    /* Mobile arrangement */
+    /* Mobile settings */
     .name-big {
         font-size: 1.5em;
     }
@@ -428,4 +684,5 @@
             font-size: .8em;
         }
     }
+
   </style>

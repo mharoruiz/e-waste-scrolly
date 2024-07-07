@@ -6,16 +6,19 @@
 
   let value;
 
+  let width;
+  let height;
+
   const steps = [
       "<p class='step-content-text'><a href='https://www.itu.int/en/ITU-D/Environment/Pages/Publications/The-Global-E-waste-Monitor-2024.aspx' target='_blank'>The Global E-Waste Monitor</a> reported that in 2022 alone, the world generated about 62 billion kg of e-waste.</p>",
       "<p class='step-content-text'><span class='color-label'>China</span>, <span class='color-label'>the US</span> and <span class='color-label'>India</span> are by far the largest individual producers of discarded electronics.</p>",
-      "<p class='step-content-text'>Together with the other countries in the top 10, they generate about 60% of global e-waste.</p>",
-      "<p class='step-content-text'>However, these 10 countries account for 54% of the global population, for which their e-waste contribution is somewhat 'fair'.",
-      "<p class='step-content-text'>To get a better sense of what countries dispose the most electronics, let's look at per capita generation of e-waste.",
+      "<p class='step-content-text'>The top 10 countries generate about 60% of global e-waste.</p>",
+      "<p class='step-content-text'>However, they also account for 54% of the global population, for which their e-waste contribution is somewhat 'fair'.",
+      "<p class='step-content-text'>To get a better sense of what countries dispose the most electronics, let's look at per capita contributions.",
       "<p class='step-content-text'><span class='high color-label'>High-income</span> countries are among the top producers of e-waste per capita.</p>",
       "<p class='step-content-text'>To find the first <span class='mid color-label'>middle-income</span> country in the per-capita ranking, we have to go down to position 50.</p>",
       "<p class='step-content-text'>Wheareas the bottom of the ranking is dominated by <span class='low color-label'>low-income</span> countries.</p>",
-      "<p class='step-content-text'>Richer countries bear a larger reponsibility for e-waste generation, with per capita contributions well-above the global average.</p>"
+      "<p class='step-content-text'>Overall, richer countries are largely responsible for e-waste generation, with per-capita contributions well-above the world average.</p>"
   ]
 
 </script>
@@ -32,11 +35,17 @@
         </span> 
         |
         <span class="article-date">
-            May-June 2024
+            July 3, 2024
         </span>
     </p> 
             
-    <p class="article-text">Look around. You are probably surrounded by electronics; from the device you are using to read this to the refrigerator that keeps your food fresh, including LED lamps, screens, printers, photovoltaic panels... Electronic devices make our lives easier and in recent decades, we have become extremely dependent on them. As small and large appliances break or become obsolete, they turn into e-waste, which can pose import environmental and health threats if not disposed appropriately.</p>
+    <p class="article-text">
+        Think about the device you are using to read this article. How long have you had it for? You probably got it to replace an old one that stopped working or became obsolete. Think about how many of this kind you have had in your life. Now try to remember all the devices of any kind you have ever had; phones, tables, laptops, smart-TVs… and all their accesories; chargers, speakers, projectors, power banks, headphones… You probably keep and still use a small portion of these, but what happened to the ones you got rid of? 
+    </p>
+
+    <p class="article-text">
+        Electronic devices make our lives easier and in recent decades, we have become extremely dependent on them. As small and large appliances break or become outdated, they turn into e-waste, which can pose import environmental and health threats if not disposed appropriately.
+    </p>
             
     <div class="section-container">
         <div class="steps-container">
@@ -50,11 +59,16 @@
         </div>
       
         <div class="sticky">
-            <Treemap step={value}/>
-            <Barplot step={value}/>
+            <div class="chart">
+                <Treemap step={value}/>
+                <Barplot step={value}/>
+            </div>
         </div>
-        
     </div>
+
+    <p class="article-text">
+        People in high-income countries tend to have more disposable income, which combined with a wider catalog of electronics available for purcharse, leads to faster consumption cycles and as a result, more waste. 
+    </p>
 
 </div>
 
@@ -87,10 +101,10 @@
     }
 
     .section-container {
+        display: flex;
+        position: relative;
         margin-top: 1em;
         text-align: center;
-        transition: background 100ms;
-        display: flex;
     }
 
     .steps-container {
@@ -114,6 +128,10 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        -webkit-transition: opacity 500ms ease;
+        -moz-transition: opacity 500ms ease; 
+        -ms-transition: opacity 500ms ease; 
+        -o-transition: opacity 500ms ease; 
         transition: opacity 500ms ease;
         box-shadow: 1px 1px 10px rgba(0, 0, 0, .2);
         text-align: left;
@@ -154,16 +172,19 @@
 
     .sticky {
         position: sticky;
+        position: -webkit-sticky; 
+        width: 100%;
+        height: 100%;
         top: 10%;
         flex: 1 1 60%;
     }
   
-    :global(.chart) {
-        position: absolute;
+    .chart {
+        position: relative;
         top: 0;
         left: 5%;
+        width: 95%;
         height: 80vh;
-        width: 90%;
     }
 
     .step.active .step-content {
@@ -246,9 +267,9 @@
         .section-container {
             flex-direction: column-reverse;
         }
-        .sticky {
-            width: 95%;
-            margin: auto;
+        .chart {
+            left: 1.25%;
+            width: 97.5%;
         }
     }
 </style>
