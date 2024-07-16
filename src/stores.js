@@ -1,6 +1,8 @@
 // src/stores.js
-import { writable, readable, derived } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { csv, autoType, stratify } from 'd3';
+
+// *** Treemap data ***
 
 // Helper function to fetch and parse CSV data
 async function fetchData(url) {
@@ -36,28 +38,25 @@ function createStratifiedStore(flatStore) {
   });
 }
 
-// Create flat and derived stores for both outer and inner data
+// Create flat for both outer and inner data
 export const flatOuter = writable([]);
-export const outerData = createStratifiedStore(flatOuter);
-
 export const flatInner = writable([]);
-export const innerData = createStratifiedStore(flatInner);
-
 // Functions to fetch and set data for outer and inner stores
 export async function fetchOuter(url) {
   const data = await fetchData(url);
   flatOuter.set(data);
 }
-
 export async function fetchInner(url) {
   const data = await fetchData(url);
   flatInner.set(data);
 }
+// Create derived fro outer and inner data
+export const outerData = createStratifiedStore(flatOuter);
+export const innerData = createStratifiedStore(flatInner);
 
+// *** Barplot data ***
 
-// ******************************************************************
-
-export const rawData = writable([], async (set) => {
+export const csvData = writable([], async (set) => {
   const loadedData = await csv(
     "https://raw.githubusercontent.com/mharoruiz/datasets/main/e-waste/ewaste.csv", 
     autoType);
@@ -65,11 +64,16 @@ export const rawData = writable([], async (set) => {
 });
 
 // Create a derived store that sorts the data by ewaste_kg_capita
-export const dataPerCapita = derived(rawData, ($rawData) => {
+export const ewasteData = derived(csvData, ($csvData) => {
   // Ensure the data is not empty before sorting
-  if ($rawData.length > 0) {
-    return $rawData.slice().sort((a, b) => b.ewaste_kg_capita - a.ewaste_kg_capita);
+  if ($csvData.length > 0) {
+    return $csvData.slice().sort((a, b) => b.ewaste_kg_capita - a.ewaste_kg_capita);
   } else {
     return [];
   }
 });
+
+// *** Worldmap tooltip ***
+
+// Create writable store for clientWidth
+export const bodyWidth = writable(document.body.clientWidth);

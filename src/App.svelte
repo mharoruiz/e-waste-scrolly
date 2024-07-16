@@ -3,11 +3,9 @@
   import Scrolly from "./Scrolly.svelte";
   import Treemap from "./Treemap.svelte";
   import Barplot from "./Barplot.svelte";
+  import Worldmap from "./Worldmap.svelte";
 
   let value;
-
-  let width;
-  let height;
 
   const steps = [
       "<p class='step-content-text'><a href='https://www.itu.int/en/ITU-D/Environment/Pages/Publications/The-Global-E-waste-Monitor-2024.aspx' target='_blank'>The Global E-Waste Monitor</a> reported that in 2022 alone, the world generated about 62 billion kg of e-waste.</p>",
@@ -43,11 +41,11 @@
         Think about the device you are using to read this article. How long have you had it for? You probably got it to replace an old one that stopped working or became obsolete. Think about how many of this kind you have had in your life. Now try to remember all the devices of any kind you have ever had; phones, tables, laptops, smart-TVs… and all their accesories; chargers, speakers, projectors, power banks, headphones… You probably keep and still use a small portion of these, but what happened to the ones you got rid of? 
     </p>
 
-    <p class="article-text">
-        Electronic devices make our lives easier and in recent decades, we have become extremely dependent on them. As small and large appliances break or become outdated, they turn into e-waste, which can pose import environmental and health threats if not disposed appropriately.
-    </p>
+    <!-- <p class="article-text">
+        Electronic devices make our lives easier and in recent decades, we have become extremely dependent on them. As small and large appliances break or become outdated, they turn into e-waste, which can pose important environmental and health threats if not disposed appropriately.
+    </p> -->
             
-    <div class="section-container">
+    <div class="section-container-1">
         <div class="steps-container">
             <Scrolly bind:value>
               {#each steps as text, i}
@@ -59,7 +57,7 @@
         </div>
       
         <div class="sticky">
-            <div class="chart">
+            <div class="chart-frame">
                 <Treemap step={value}/>
                 <Barplot step={value}/>
             </div>
@@ -69,6 +67,37 @@
     <p class="article-text">
         People in high-income countries tend to have more disposable income, which combined with a wider catalog of electronics available for purcharse, leads to faster consumption cycles and as a result, more waste. 
     </p>
+    
+    <h3 class="article-subsection-title">
+        The Policy Realm
+    </h3>
+
+    <p class="article-text">
+        Governments across the world make use of different strategies to deal with the e-waste issue from a regulatory perspective. The most common are national e-waste policies, which reflect an internet by the government to tackle e-waste and usually contain specific policy objectives, strategies or action plans but are not legally binding. In order to strengthen the effectiveness of national policies, governments employ a combination of the following regulations:
+    </p>
+    <ul class="article-text">
+        <li>
+            <b>Extended Producer Responsibility (EPR)</b>:  Makes producers responsible for the entire lifecycle electronics, usually by providing incentives that impact their desing. 
+        </li>
+        <li>
+            <b>Collection target</b>: Formally sets a goal to the amount of e-waste to be collected at a national level.
+        </li>
+        <li>
+            <b>Recycling target</b>: Similarly to collection target, it aims at establishing a benchmark for the amount of e-waste to be repurposed. These targets are crucial to track a country’s capacity to deal with the e-waste they produce and push for stronger legislation. 
+        </li>
+    </ul>
+
+    <div class="section-container-2">
+
+        <h4 class="plot-title">
+            Countries <span style="color: #428067; font-weight: 500; opacity: .9">with</span> and <span style="color: #764b93; font-weight: 500; opacity: .9">without</span> e-waste national policy
+        </h4>
+        <div class="map-frame">
+            <Worldmap/>
+        </div>
+    </div>
+
+    
 
 </div>
 
@@ -84,11 +113,6 @@
         font-weight: 600;
     }
 
-    .article-text {
-        font-family: var(--main-font);
-        font-weight: 300;
-    }
-
     .article-author{
         margin-bottom: 0;
         font-weight: 400;
@@ -100,10 +124,24 @@
         font-style: italic;
     }
 
-    .section-container {
+    .article-text {
+        font-family: var(--main-font);
+        font-weight: 300;
+    }
+
+    .article-subsection-title {
+        font-family: var(--section-font);
+        font-weight: 600;
+    }
+
+    .plot-title {
+        font-family: var(--main-font); 
+        font-weight: 300;
+    }
+
+    .section-container-1 {
         display: flex;
-        position: relative;
-        margin-top: 1em;
+        /* position: relative; */
         text-align: center;
     }
 
@@ -179,7 +217,7 @@
         flex: 1 1 60%;
     }
   
-    .chart {
+    .chart-frame {
         position: relative;
         top: 0;
         left: 5%;
@@ -196,6 +234,23 @@
         height: 100%;
     }
 
+    .section-container-2 {
+        /* position: relative; */
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: space-between;
+        text-align: left;
+    }
+
+    .map-frame {
+        position: relative;
+        top: 0;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2.25;
+    }
+
     /* Mobile arrangement */
     .article-title {
         font-size: 2.5em;
@@ -209,6 +264,14 @@
         font-size: 1.5em;
         line-height: 1.75;
         margin: 40px auto;
+    }
+    .article-subsection-title {
+        font-size: 1.5em;
+        margin: 40px auto 20px
+    }
+    .plot-title {
+        font-size: 1.5em;
+        margin-bottom: 10px;
     }
     .step-content {
         font-size: 1.4em;
@@ -227,6 +290,14 @@
             font-size: 1.75em;
             line-height: 1.75;
             margin: 50px auto;
+        }
+        .article-subsection-title {
+            font-size: 1.75em;
+            margin: 25px auto;
+        }
+        .plot-title {
+            font-size: 2em;
+            margin-bottom: 15px;
         }
         .step-content {
             font-size: 1.6em;
@@ -247,6 +318,14 @@
             line-height: 1.5;
             margin: 60 auto;
         }
+        .article-subsection-title {
+            font-size: 2em;
+            margin: 50px auto 25px
+        }
+        .plot-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
         .step-content {
             font-size: 1.85em;
         }
@@ -264,10 +343,10 @@
     } */
 
     @media all and (max-width: 600px) {
-        .section-container {
+        .section-container-1 {
             flex-direction: column-reverse;
         }
-        .chart {
+        .chart-frame {
             left: 1.25%;
             width: 97.5%;
         }

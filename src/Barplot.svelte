@@ -1,5 +1,6 @@
 <script>
-    import { dataPerCapita } from './stores.js';
+
+    import { ewasteData } from './stores.js';
     import { scaleLinear, scaleOrdinal} from 'd3';
     import { tweened } from 'svelte/motion';
     import { fade } from "svelte/transition";
@@ -46,8 +47,8 @@
         easing: cubicInOut
     });
 
-    $: if ($dataPerCapita) {
-        data = $dataPerCapita;
+    $: if ($ewasteData) {
+        data = $ewasteData;
 
         chartWidth = width - margin.right - margin.left;
         chartHeight = height - margin.bottom - margin.top;
@@ -98,8 +99,8 @@
 >
     {#if step >= 4}
         <svg 
-            width={width} 
-            height={height}
+            {width} 
+            {height}
             in:fade={{ duration: 2500, easing: quartIn }}
             out:fade={{ duration: 1000, easing: cubicInOut }}
         >
@@ -117,7 +118,7 @@
                             y={(barSpace * idx) + (barSpace * 0.5)}
                             style="opacity:{$tweenedTextOpacity};"
                         >
-                            {yVal.country}
+                            {yVal.country_short}
                         </text>
                         {#if step > 4}
                             <rect
